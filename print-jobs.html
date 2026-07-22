@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickOS - Print Jobs</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+    <script>if(localStorage.getItem("quickos_dark_mode") === "true") document.body.classList.add("dark-mode");</script>
+
+    <!-- ડાબી બાજુનું મેનુ -->
+    <div class="sidebar">
+        <div class="logo">QuickOS</div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="customers.html">Customers</a></li>
+            <li class="active"><a href="print-jobs.html">Print Jobs</a></li>
+            <li><a href="orders.html">Orders</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="index.html">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- જમણી બાજુનો મેઈન ભાગ -->
+    <div class="main-content">
+        <div class="header">
+            <h2>Print Jobs Queue</h2>
+            <button class="add-btn" id="openUploadModalBtn">+ Upload New File</button>
+        </div>
+
+        <div class="recent-orders">
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Customer</th>
+                        <th>File Name</th>
+                        <th>Print Details</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <!-- અહીં નવો ડેટા આવશે -->
+                <tbody id="printJobTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Upload File Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 style="margin-bottom: 20px;">Upload File for Print</h3>
+            <form>
+                <div class="input-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="printCustomer" placeholder="Enter customer name" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; outline: none;">
+                </div>
+                <div class="input-group">
+                    <label>Select File (PDF, JPG, PNG)</label>
+                    <input type="file" id="printFile" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; outline: none;">
+                </div>
+                <div class="input-group">
+                    <label>Print Details (e.g. Color A4, 5 Copies)</label>
+                    <input type="text" id="printDetails" placeholder="Enter print instructions" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 20px; outline: none;">
+                </div>
+                <button type="button" class="add-btn" id="savePrintJobBtn" style="width: 100%;">Add to Print Queue</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- પ્રિન્ટ જોબ સેવ કરવાની સ્ક્રિપ્ટ (Local Storage) -->
+    <script>
+        var uploadModal = document.getElementById("uploadModal");
+        var uploadBtn = document.getElementById("openUploadModalBtn");
+        var closeUploadSpan = document.getElementsByClassName("close-btn")[0];
+
+        uploadBtn.onclick = function() { uploadModal.style.display = "flex"; }
+        closeUploadSpan.onclick = function() { uploadModal.style.display = "none"; }
+
+        // ૧. ડેટાબેઝમાંથી જૂના પ્રિન્ટ જોબ્સ શોધો 
+        let printJobs = JSON.parse(localStorage.getItem("quickos_print_jobs")) || [];
+
+        // ૨. ટેબલમાં પ્રિન્ટ જોબ્સ બતાવવાનું ફંક્શન
+        function displayPrintJobs() {
+            let tbody = document.getElementById("printJobTableBody");
+            tbody.innerHTML = ""; 
+            
+            printJobs.forEach((job, index) => {
+                let row = `<tr>
+                    <td>PRT-${1001 + index}</td>
+                    <td>${job.customer}</td>
+                    <td><strong>${job.fileName}</strong></td>
+                    <td>${job.details}</td>
+                    <td><span class="status pending">Waiting</span></td>
+                    <td>
+                        <button class="action-btn delete" onclick="deletePrintJob(${index})">Done / Remove</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row; 
+            });
+        }
+
+        // ૩. નવી ફાઈલ સેવ કરવાનું ફંક્શન
+        document.getElementById("savePrintJobBtn").onclick = function() {
+            let customer = document.getElementById("printCustomer").value;
+            let fileInput = document.getElementById("printFile");
+            let details = document.getElementById("printDetails").value;
+
+            // ચેક કરો કે ગ્રાહકનું નામ અને ફાઈલ સિલેક્ટ કરી છે કે નહીં
+            if(customer === "" || fileInput.files.length === 0 || details === "") {
+                alert("Please fill all details and select a file!"); 
+                return;
+            }
+
+            // સિલેક્ટ કરેલી ફાઈલનું અસલી નામ કાઢો
+            let actualFileName = fileInput.files[0].name;
+
+            // લિસ્ટમાં ઉમેરો
+            printJobs.push({
+                customer: customer, 
+                fileName: actualFileName, 
+                details: details
+            });
+            
+            // બ્રાઉઝરની મેમરીમાં સેવ કરો
+            localStorage.setItem("quickos_print_jobs", JSON.stringify(printJobs));
+            
+            // ફોર્મ ખાલી કરો
+            document.getElementById("printCustomer").value = "";
+            document.getElementById("printFile").value = "";
+            document.getElementById("printDetails").value = "";
+            uploadModal.style.display = "none";
+            
+            displayPrintJobs(); 
+        };
+
+        // ૪. પ્રિન્ટ જોબ કાઢવાનું ફંક્શન
+        function deletePrintJob(index) {
+            printJobs.splice(index, 1);
+            localStorage.setItem("quickos_print_jobs", JSON.stringify(printJobs));
+            displayPrintJobs();
+        }
+
+        // પેજ ખુલે એટલે પ્રિન્ટ જોબ્સ બતાવો
+        displayPrintJobs();
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickOS - Settings</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+    <div class="sidebar">
+        <div class="logo">QuickOS</div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="customers.html">Customers</a></li>
+            <li><a href="print-jobs.html">Print Jobs</a></li>
+            <li><a href="orders.html">Orders</a></li>
+            <li class="active"><a href="settings.html">Settings</a></li>
+            <li><a href="index.html">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h2>System Settings</h2>
+        </div>
+
+        <div class="recent-orders" style="max-width: 600px;">
+            <h3 style="margin-bottom: 20px;">Admin Profile</h3>
+            
+            <!-- ડાર્ક મોડનું નવું કાયમી બટન -->
+            <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 25px;">
+                <label style="margin: 0; font-weight: bold; font-size: 16px;">Enable Dark Mode</label>
+                <input type="checkbox" id="darkModeToggle" style="width: 20px; height: 20px; cursor: pointer;">
+            </div>
+            
+            <form>
+                <div class="input-group">
+                    <label>Admin Name</label>
+                    <input type="text" id="adminName" value="Hitarth" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; outline: none;">
+                </div>
+                
+                <div class="input-group">
+                    <label>Admin Email</label>
+                    <input type="email" id="adminEmail" value="admin@quickos.com" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; outline: none;">
+                </div>
+                
+                <div class="input-group">
+                    <label>Permanent System Notes</label>
+                    <textarea id="systemNotes" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 25px; outline: none; font-family: inherit;" placeholder="Type your permanent settings or rules here..."></textarea>
+                </div>
+
+                <button class="add-btn" type="button" id="saveSettingsBtn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            let savedNotes = localStorage.getItem("quickos_notes");
+            let savedName = localStorage.getItem("quickos_admin_name");
+            let isDarkMode = localStorage.getItem("quickos_dark_mode") === "true";
+
+            if(savedNotes) document.getElementById("systemNotes").value = savedNotes;
+            if(savedName) document.getElementById("adminName").value = savedName;
+            
+            // જો અગાઉથી ડાર્ક મોડ સેવ હોય તો ચાલુ રાખો
+            let darkToggle = document.getElementById("darkModeToggle");
+            darkToggle.checked = isDarkMode;
+            if(isDarkMode) document.body.classList.add("dark-mode");
+
+            // સ્વિચ ઓન/ઓફ કરવા પર
+            darkToggle.onchange = function() {
+                if(this.checked) {
+                    document.body.classList.add("dark-mode");
+                    localStorage.setItem("quickos_dark_mode", "true");
+                } else {
+                    document.body.classList.remove("dark-mode");
+                    localStorage.setItem("quickos_dark_mode", "false");
+                }
+            };
+        };
+
+        document.getElementById("saveSettingsBtn").onclick = function() {
+            let notes = document.getElementById("systemNotes").value;
+            let name = document.getElementById("adminName").value;
+            
+            localStorage.setItem("quickos_notes", notes);
+            localStorage.setItem("quickos_admin_name", name);
+            
+            alert("તમારું સેટિંગ અને નોંધ કાયમ માટે સેવ થઈ ગયા છે!"); 
+        };
+    </script>
+</body>
+</html>

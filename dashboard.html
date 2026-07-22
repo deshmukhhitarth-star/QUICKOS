@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickOS - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+    <script>if(localStorage.getItem("quickos_dark_mode") === "true") document.body.classList.add("dark-mode");</script>
+
+    <!-- ડાબી બાજુનું મેનુ -->
+    <div class="sidebar">
+        <div class="logo">QuickOS</div>
+        <ul class="nav-links">
+            <li class="active"><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="customers.html">Customers</a></li>
+            <li><a href="print-jobs.html">Print Jobs</a></li>
+            <li><a href="orders.html">Orders</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="index.html">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- જમણી બાજુનો મેઈન ભાગ -->
+    <div class="main-content">
+        <div class="header">
+            <h2>Dashboard</h2>
+        </div>
+
+        <!-- સ્માર્ટ આંકડાઓ (Live Stats) -->
+        <div style="display: flex; gap: 20px; margin-bottom: 30px;">
+            <div style="background: white; padding: 20px; border-radius: 8px; flex: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3 style="color: #666; margin-bottom: 10px;">Total Customers</h3>
+                <h2 id="dashTotalCustomers" style="font-size: 28px; color: #333;">0</h2>
+            </div>
+            <div style="background: white; padding: 20px; border-radius: 8px; flex: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3 style="color: #666; margin-bottom: 10px;">Total Orders</h3>
+                <h2 id="dashTotalOrders" style="font-size: 28px; color: #333;">0</h2>
+            </div>
+            <div style="background: white; padding: 20px; border-radius: 8px; flex: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3 style="color: #666; margin-bottom: 10px;">Total Revenue</h3>
+                <h2 id="dashTotalRevenue" style="font-size: 28px; color: #28a745;">₹0</h2>
+            </div>
+            <div style="background: white; padding: 20px; border-radius: 8px; flex: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3 style="color: #666; margin-bottom: 10px;">Print Jobs</h3>
+                <h2 id="dashTotalJobs" style="font-size: 28px; color: #007bff;">0</h2>
+            </div>
+        </div>
+
+        <!-- તાજેતરના ઓર્ડર્સ (Recent Orders) -->
+        <div class="recent-orders">
+            <h3 style="margin-bottom: 15px;">Recent Orders (Last 5)</h3>
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="dashRecentOrders">
+                    <!-- ડેટા જાવાસ્ક્રિપ્ટથી આવશે -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ડેશબોર્ડને લાઈવ બનાવવાની સ્ક્રિપ્ટ -->
+    <script>
+        // ૧. ડેટાબેઝમાંથી બધો ડેટા ખેંચી લાવો
+        let customers = JSON.parse(localStorage.getItem("quickos_customers")) || [];
+        let orders = JSON.parse(localStorage.getItem("quickos_orders")) || [];
+        let printJobs = JSON.parse(localStorage.getItem("quickos_print_jobs")) || [];
+
+        // ૨. ગણતરી કરીને આંકડાઓને અપડેટ કરો
+        document.getElementById("dashTotalCustomers").innerText = customers.length;
+        document.getElementById("dashTotalOrders").innerText = orders.length;
+        document.getElementById("dashTotalJobs").innerText = printJobs.length;
+
+        // આવક (Revenue) નો સરવાળો કરો
+        let totalRevenue = 0;
+        orders.forEach(order => {
+            totalRevenue += Number(order.amount);
+        });
+        document.getElementById("dashTotalRevenue").innerText = "₹" + totalRevenue;
+
+        // ૩. તાજેતરના ૫ ઓર્ડર નીચેના ટેબલમાં બતાવો
+        let tbody = document.getElementById("dashRecentOrders");
+        tbody.innerHTML = ""; 
+        
+        // છેલ્લેથી ઓર્ડર બતાવવા માટે રિવર્સ કરીએ અને ફક્ત ૫ જ લઈએ
+        let recentOrders = orders.slice().reverse().slice(0, 5);
+
+        if(recentOrders.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; padding: 20px;'>No orders found. Create your first order!</td></tr>";
+        } else {
+            recentOrders.forEach((ord) => {
+                let row = `<tr>
+                    <td><strong>${ord.customer}</strong></td>
+                    <td>${ord.service}</td>
+                    <td style="color: #28a745; font-weight: bold;">₹${ord.amount}</td>
+                    <td>${ord.date}</td>
+                </tr>`;
+                tbody.innerHTML += row; 
+            });
+        }
+    </script>
+</body>
+</html>

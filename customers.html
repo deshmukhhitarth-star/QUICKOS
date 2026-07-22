@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickOS - Customers</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+    <script>if(localStorage.getItem("quickos_dark_mode") === "true") document.body.classList.add("dark-mode");</script>
+
+    <!-- ડાબી બાજુનું મેનુ -->
+    <div class="sidebar">
+        <div class="logo">QuickOS</div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li class="active"><a href="customers.html">Customers</a></li>
+            <li><a href="print-jobs.html">Print Jobs</a></li>
+            <li><a href="orders.html">Orders</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="index.html">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- જમણી બાજુનો મેઈન ભાગ -->
+    <div class="main-content">
+        <div class="header">
+            <h2>Customers</h2>
+            <button class="add-btn" id="openModalBtn">+ Add Customer</button>
+        </div>
+
+        <div class="recent-orders">
+            <div style="margin-bottom: 20px;">
+                <input type="text" placeholder="Search customers..." style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px; outline: none;">
+            </div>
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <!-- અહીં આપણે નવો id આપ્યો છે, જેથી જાવાસ્ક્રિપ્ટ ડેટા અહીં મૂકી શકે -->
+                <tbody id="customerTableBody">
+                    <!-- નવો ડેટા જાવાસ્ક્રિપ્ટ દ્વારા અહીં આપોઆપ આવશે -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal (પોપ-અપ ફોર્મ) -->
+    <div id="addCustomerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 style="margin-bottom: 20px;">Add New Customer</h3>
+            <form>
+                <div class="input-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="custName" placeholder="Enter full name" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; outline: none;">
+                </div>
+                <div class="input-group">
+                    <label>Mobile Number</label>
+                    <input type="text" id="custPhone" placeholder="Enter mobile number" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; outline: none;">
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="custEmail" placeholder="Enter email" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 20px; outline: none;">
+                </div>
+                <button type="button" class="add-btn" id="saveCustomerBtn" style="width: 100%;">Save Customer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- પોપ-અપ અને ડેટા સેવ કરવાની સ્ક્રિપ્ટ (મગજ) -->
+    <script>
+        var modal = document.getElementById("addCustomerModal");
+        var btn = document.getElementById("openModalBtn");
+        var span = document.getElementsByClassName("close-btn")[0];
+
+        // મોડલ ખોલવા/બંધ કરવા માટે
+        btn.onclick = function() { modal.style.display = "flex"; }
+        span.onclick = function() { modal.style.display = "none"; }
+
+        // --- Local Storage જાદુ અહીંથી શરૂ થાય છે ---
+        
+        // ૧. ડેટાબેઝમાંથી જૂના ગ્રાહકો શોધો (જો હોય તો)
+        let customers = JSON.parse(localStorage.getItem("quickos_customers")) || [];
+
+        // ૨. ટેબલમાં ગ્રાહકોને બતાવવા માટેનું ફંક્શન
+        function displayCustomers() {
+            let tbody = document.getElementById("customerTableBody");
+            tbody.innerHTML = ""; // પહેલા જૂનું સાફ કરો
+            
+            customers.forEach((cust, index) => {
+                let row = `<tr>
+                    <td>CUST-${1001 + index}</td>
+                    <td>${cust.name}</td>
+                    <td>${cust.phone}</td>
+                    <td>${cust.email}</td>
+                    <td>
+                        <button class="action-btn delete" onclick="deleteCustomer(${index})">Delete</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row; // નવો ડેટા ઉમેરો
+            });
+        }
+
+        // ૩. Save બટન દબાવવા પર નવો ગ્રાહક સેવ કરવાનું ફંક્શન
+        document.getElementById("saveCustomerBtn").onclick = function() {
+            let name = document.getElementById("custName").value;
+            let phone = document.getElementById("custPhone").value;
+            let email = document.getElementById("custEmail").value;
+
+            if(name === "" || phone === "") {
+                alert("Please enter Name and Phone!"); // ચેતવણી આપો
+                return;
+            }
+
+            // ગ્રાહકને લિસ્ટમાં ઉમેરો
+            customers.push({name: name, phone: phone, email: email});
+            
+            // બ્રાઉઝરની મેમરીમાં કાયમ માટે સેવ કરો
+            localStorage.setItem("quickos_customers", JSON.stringify(customers));
+            
+            // ફોર્મ ખાલી કરો અને પોપ-અપ બંધ કરો
+            document.getElementById("custName").value = "";
+            document.getElementById("custPhone").value = "";
+            document.getElementById("custEmail").value = "";
+            modal.style.display = "none";
+            
+            displayCustomers(); // ટેબલ અપડેટ કરો
+        };
+
+        // ૪. Delete બટન દબાવવા પર ગ્રાહકને કાઢવાનું ફંક્શન
+        function deleteCustomer(index) {
+            customers.splice(index, 1);
+            localStorage.setItem("quickos_customers", JSON.stringify(customers));
+            displayCustomers();
+        }
+
+        // પેજ ખુલે ત્યારે તરત જ ડેટા બતાવો
+        displayCustomers();
+    </script>
+</body>
+</html>

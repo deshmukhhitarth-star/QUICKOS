@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickOS - Orders</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+    <script>if(localStorage.getItem("quickos_dark_mode") === "true") document.body.classList.add("dark-mode");</script>
+
+    <div class="sidebar">
+        <div class="logo">QuickOS</div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="customers.html">Customers</a></li>
+            <li><a href="print-jobs.html">Print Jobs</a></li>
+            <li class="active"><a href="orders.html">Orders</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="index.html">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h2>All Orders</h2>
+            <button class="add-btn" id="openOrderModalBtn">+ Create New Order</button>
+        </div>
+
+        <div class="recent-orders">
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="addOrderModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Create New Order</h3>
+            <form>
+                <div class="input-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="orderCustomer" style="width: 100%; padding: 10px; margin-bottom: 15px;">
+                </div>
+                <div class="input-group">
+                    <label>Service Type</label>
+                    <input type="text" id="orderService" style="width: 100%; padding: 10px; margin-bottom: 15px;">
+                </div>
+                <div class="input-group">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="orderAmount" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+                </div>
+                <button type="button" class="add-btn" id="saveOrderBtn" style="width: 100%;">Save Order</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var orderModal = document.getElementById("addOrderModal");
+        document.getElementById("openOrderModalBtn").onclick = function() { orderModal.style.display = "flex"; }
+        document.getElementsByClassName("close-btn")[0].onclick = function() { orderModal.style.display = "none"; }
+
+        let orders = JSON.parse(localStorage.getItem("quickos_orders")) || [];
+
+        function displayOrders() {
+            let tbody = document.getElementById("orderTableBody");
+            tbody.innerHTML = ""; 
+            
+            orders.forEach((ord, index) => {
+                let row = `<tr>
+                    <td>ORD-${1001 + index}</td>
+                    <td>${ord.customer}</td>
+                    <td>${ord.service}</td>
+                    <td>₹${ord.amount}</td>
+                    <td>
+                        <button class="action-btn" style="background:#007bff; color:white; margin-right:5px;" onclick="printBill('ORD-${1001+index}', '${ord.customer}', '${ord.service}', '${ord.amount}')">Print Bill</button>
+                        <button class="action-btn delete" onclick="deleteOrder(${index})">Delete</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row; 
+            });
+        }
+
+        function printBill(id, customer, service, amount) {
+            let printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<h2>Visuals by Hitu</h2><p>Order ID: ' + id + '</p><p>Customer: ' + customer + '</p><p>Service: ' + service + '</p><h3>Total: Rs. ' + amount + '</h3>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        document.getElementById("saveOrderBtn").onclick = function() {
+            let customer = document.getElementById("orderCustomer").value;
+            let service = document.getElementById("orderService").value;
+            let amount = document.getElementById("orderAmount").value;
+            if(customer === "" || amount === "") return alert("Enter details!");
+            
+            orders.push({customer: customer, service: service, amount: amount});
+            localStorage.setItem("quickos_orders", JSON.stringify(orders));
+            orderModal.style.display = "none";
+            displayOrders(); 
+        };
+
+        function deleteOrder(index) {
+            orders.splice(index, 1);
+            localStorage.setItem("quickos_orders", JSON.stringify(orders));
+            displayOrders();
+        }
+
+        displayOrders();
+    </script>
+</body>
+</html>
