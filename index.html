@@ -46,6 +46,21 @@
     </div>
 
     <!-- અહીં આપણે JavaScript ફાઈલને જોડી છે -->
-    <script src="script.js"></script>
+        <script>
+        document.querySelector(".login-btn").onclick = function() {
+            let user = document.getElementById("username").value;
+            let pass = document.getElementById("password").value;
+
+            // જો પાસવર્ડ સાચો હશે, તો સીધું ડેશબોર્ડ ખુલશે
+            if(user === "admin" && pass === "1234") {
+                window.location.href = "dashboard.html"; 
+            } else {
+                alert("યુઝરનેમ અથવા પાસવર્ડ ખોટો છે! મહેરબાની કરીને ફરીથી પ્રયત્ન કરો.");
+            }
+        };
+    </script>
+</body>
+</html>
+
 </body>
 </html>
